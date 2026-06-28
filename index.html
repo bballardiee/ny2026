@@ -705,27 +705,29 @@
         id: "d01",
         tab: "01/07 Statue 13h",
         date: "01/07, quarta",
-        title: "Estátua oficial às 13:00 + DUMBO opcional",
+        title: "Estátua oficial às 13:00 + DUMBO saindo de lá",
         weather: "35 C / 26 C, calor perigoso",
-        tags: [["clássico", ""], ["Statue 13:00", "heat"], ["DUMBO opcional", "park"]],
-        route: [hotel, "Oculus World Trade Center New York", "Brookfield Place New York", "Battery Park Statue City Cruises New York", "Statue of Liberty National Monument", hotel, "Time Out Market New York 55 Water St Brooklyn"],
+        tags: [["clássico", ""], ["Statue 13:00", "heat"], ["DUMBO", "park"]],
+        route: [hotel, "Oculus World Trade Center New York", "Brookfield Place New York", "Battery Park Statue City Cruises New York", "Statue of Liberty National Monument", "Pier 11 Wall St New York", "DUMBO Fulton Ferry Brooklyn", "Time Out Market New York 55 Water St Brooklyn"],
         plan: [
           ["09:30", "Manhã sem pressa em Lower Manhattan: Oculus/Westfield, Brookfield Place, Charging Bull/Battery Park se estiver suportável. Tudo perto do embarque e com ar-condicionado por perto."],
           ["11:15", "Almoço antes da Estátua. Melhor fazer algo rápido e controlado em Oculus/Brookfield Place; Bubby's só se for muito cedo e sem fila."],
           ["12:15", "Ir para Castle Clinton/Battery Park e entrar no fluxo de segurança. Não comprar nada de vendedores no caminho; só Statue City Cruises oficial."],
           ["13:00", "Ferry oficial para Liberty Island. Fazer Liberty Island + pedestal/museu/fotos. Para minimizar perda de tempo, não planejar Ellis Island neste dia."],
-          ["15:30", "Mirar ferry de volta assim que a ilha estiver cumprida. Chegando em Battery, decidir entre descanso no hotel ou lanche rápido."],
-          ["18:30", "DUMBO/Brooklyn Bridge Park só se todo mundo estiver bem. Time Out Market resolve comida variada; se a família estiver cansada, cortar sem culpa."],
-          ["20:30", "Voltar de metrô/ferry. Fotos em Washington Street só se a fila estiver civilizada."],
+          ["15:30", "Mirar ferry de volta assim que a ilha estiver cumprida. Chegando em Battery, não voltar ao hotel: seguir direto para DUMBO."],
+          ["16:15", "Rota bonita: caminhar até Pier 11/Wall St e pegar NYC Ferry para DUMBO/Fulton Ferry. Se a espera estiver ruim, plano B é metrô R/4/5/A/C para Brooklyn."],
+          ["17:00", "DUMBO/Brooklyn Bridge Park: Jane's Carousel, Pebble Beach, skyline e Washington Street se a fila estiver civilizada."],
+          ["18:30", "Time Out Market para jantar casual com opções para todo mundo."],
+          ["20:30", "Voltar de metrô para Midtown. Se a energia acabar antes, cortar fotos extras e ir direto depois de comer."],
         ],
         food: [
           ["Oculus / Brookfield Place", "almoço rápido antes da Estátua, com ar-condicionado"],
           ["Bubby's", "120 Hudson St; só se for cedo e sem fila"],
-          ["Time Out Market Brooklyn", "55 Water St; opcional se DUMBO sobreviver ao dia"],
+          ["Time Out Market Brooklyn", "55 Water St; jantar casual principal do dia"],
           ["L'Industrie Williamsburg", "254 S 2nd St; só se quiserem esticar Brooklyn"],
           ["Lucali", "575 Henry St; ótima pizza, mas fila/espera pesada com crianças"],
         ],
-        notes: ["Com 13:00, a melhor defesa é não tentar fazer duas ilhas: Liberty Island + pedestal/museu/fotos, e Ellis Island fica fora.", "Levar água, boné e protetor; o horário é quente e a segurança/embarque pode tomar tempo.", "DUMBO vira bônus de fim de dia, não obrigação. Se a Estátua drenar energia, cortar Brooklyn preserva a viagem."]
+        notes: ["Com 13:00, a melhor defesa é não tentar fazer duas ilhas: Liberty Island + pedestal/museu/fotos, e Ellis Island fica fora.", "A ida para DUMBO funciona melhor sem passar no hotel: Battery Park -> Pier 11 -> NYC Ferry para DUMBO/Fulton Ferry.", "Levar água, boné e protetor; o horário é quente e a segurança/embarque pode tomar tempo."]
       },
       {
         id: "d02",
@@ -848,7 +850,7 @@
     ];
 
     const checklist = [
-      "Comprar Statue City Cruises/Pedestal para 01/07 às 13:00 e planejar Liberty Island apenas; Ellis Island e DUMBO ficam opcionais.",
+      "Comprar Statue City Cruises/Pedestal para 01/07 às 13:00; planejar Liberty Island apenas e seguir direto para DUMBO, sem voltar ao hotel.",
       "Marcar AMNH para 03/07 às 10:00; considerar planetário se as meninas curtirem.",
       "Comprar SUMMIT One Vanderbilt apenas em janela com céu bom ou ingresso flexível.",
       "Au Cheval: manter 02/07 às 16:30 e tratar como early dinner depois das compras de SoHo.",
@@ -911,8 +913,9 @@
       { day: "d01", name: "Oculus / Brookfield Place", type: "comida", lat: 40.7114, lng: -74.0123, note: "Almoço cedo e ar-condicionado antes da Estátua" },
       { day: "d01", name: "Battery Park / Statue City Cruises", type: "passeio", lat: 40.7036, lng: -74.0170, note: "Chegar por volta de 12:15 para o ticket 13:00" },
       { day: "d01", name: "Statue of Liberty", type: "passeio", lat: 40.6892, lng: -74.0445, note: "Liberty Island + pedestal; sem Ellis Island" },
-      { day: "d01", name: "Brooklyn Bridge Park", type: "extra", lat: 40.7003, lng: -73.9967, note: "Fim de tarde em DUMBO, opcional" },
-      { day: "d01", name: "Time Out Market", type: "extra", lat: 40.70313, lng: -73.98860, note: "Jantar casual se DUMBO ainda fizer sentido" },
+      { day: "d01", name: "Pier 11 / Wall St", type: "passeio", lat: 40.7026, lng: -74.0066, note: "NYC Ferry para DUMBO/Fulton Ferry se a espera estiver boa" },
+      { day: "d01", name: "Brooklyn Bridge Park", type: "passeio", lat: 40.7003, lng: -73.9967, note: "Fim de tarde em DUMBO" },
+      { day: "d01", name: "Time Out Market", type: "comida", lat: 40.70313, lng: -73.98860, note: "Jantar casual em DUMBO" },
 
       { day: "d02", name: "SoHo compras", type: "compras", lat: 40.7240, lng: -73.9981, note: "Eixo Broadway, Prince, Mercer, Greene" },
       { day: "d02", name: "All'Antico Vinaio", type: "comida", lat: 40.7281, lng: -74.0003, note: "Dividir algo leve antes do Au Cheval" },
