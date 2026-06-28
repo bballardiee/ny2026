@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NYC em família | 30 jun - 6 jul</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #647184;
+      --line: #d8dee8;
+      --paper: #fbfaf6;
+      --panel: #ffffff;
+      --taxi: #f2c94c;
+      --park: #2f7d5a;
+      --river: #2e78b7;
+      --brick: #b9503d;
+      --night: #243447;
+      --soft-yellow: #fff7d6;
+      --soft-green: #eaf5ef;
+      --soft-blue: #eaf2fb;
+      --soft-red: #fff0ec;
+      --shadow: 0 12px 30px rgba(23, 32, 42, .08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(47,125,90,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(46,120,183,.07) 1px, transparent 1px),
+        var(--paper);
+      background-size: 42px 42px;
+      line-height: 1.45;
+    }
+
+    a { color: inherit; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px;
+      background: rgba(255, 255, 255, .92);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+      backdrop-filter: blur(12px);
+    }
+
+    main {
+      padding: 24px;
+      max-width: 1180px;
+      width: 100%;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--river);
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.08;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4vw, 52px);
+      max-width: 760px;
+    }
+
+    h2 { font-size: 26px; }
+    h3 { font-size: 18px; }
+
+    p { margin: 0; }
+
+    .intro {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .metric {
+      min-height: 88px;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+    }
+
+    .metric b {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      display: block;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .nav-title {
+      font-weight: 900;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .nav-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .quick-actions {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    button, .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      min-height: 40px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .btn.primary, button.primary {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+
+    .btn.yellow { background: var(--soft-yellow); border-color: #ead37c; }
+    .btn.green { background: var(--soft-green); border-color: #b9d8c7; }
+    .btn.blue { background: var(--soft-blue); border-color: #b7d2ee; }
+
+    .tabs {
+      display: grid;
+      gap: 7px;
+    }
+
+    .tab {
+      justify-content: flex-start;
+      text-align: left;
+      min-height: 44px;
+      border-left: 5px solid transparent;
+    }
+
+    .tab.active {
+      border-color: var(--taxi);
+      background: #fff8df;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .notice {
+      background: var(--night);
+      color: white;
+      border-radius: 8px;
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .notice a { color: white; }
+
+    .reservation-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .reservation {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .reservation strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .reservation span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .map-wrap {
+      background: rgba(255,255,255,.9);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin: 18px 0;
+    }
+
+    #tripMap {
+      height: min(58vh, 560px);
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #edf2f7;
+    }
+
+    .map-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .map-filter.active {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+
+    .map-fallback {
+      display: none;
+      padding: 14px;
+      color: var(--muted);
+    }
+
+    .day-panel {
+      display: none;
+      background: rgba(255,255,255,.82);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .day-panel.active { display: block; }
+
+    .day-head {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #fff, #fff7d6);
+    }
+
+    .day-kicker {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid var(--line);
+      background: white;
+    }
+
+    .tag.heat { background: var(--soft-red); border-color: #f3c2b6; color: #8a2e1f; }
+    .tag.food { background: var(--soft-yellow); border-color: #ecd889; }
+    .tag.transit { background: var(--soft-blue); border-color: #b7d2ee; color: #1e5b8f; }
+    .tag.park { background: var(--soft-green); border-color: #b9d8c7; color: #235f44; }
+
+    .day-body {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, .8fr);
+      gap: 18px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .slot {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .time {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .slot p { color: #2c3744; }
+
+    .side {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .side-box {
+      padding: 14px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .side-box h3 { margin-bottom: 10px; }
+
+    .link-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .food-list, .notes-list, .store-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .food-list li, .notes-list li, .store-list li {
+      padding: 9px 0;
+      border-bottom: 1px solid #edf0f4;
+    }
+
+    .food-list li:last-child, .notes-list li:last-child, .store-list li:last-child { border-bottom: 0; }
+
+    .food-list a, .store-list a {
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .subtext {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .tool-section {
+      margin-top: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .band {
+      background: rgba(255,255,255,.9);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .band-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 8px;
+    }
+
+    label.check {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 9px;
+      padding: 10px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      align-items: start;
+    }
+
+    input[type="checkbox"] {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--park);
+    }
+
+    .done span { text-decoration: line-through; color: var(--muted); }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .filter.active {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+
+    .stores-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .store-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .footer {
+      margin: 26px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      main { padding: 18px; }
+      .summary, .three-col, .reservation-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .day-body, .two-col, .stores-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      aside, main { padding: 14px; }
+      .summary, .three-col, .reservation-strip { grid-template-columns: 1fr; }
+      .day-head { grid-template-columns: 1fr; }
+      .slot { grid-template-columns: 1fr; }
+      .btn, button { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="nav-title">NYC em família</div>
+      <div class="nav-sub">30/06 a 06/07, base no LUMA Hotel, Bryant Park. Salve este arquivo no celular ou abra no navegador.</div>
+      <div class="quick-actions">
+        <a class="btn primary" id="hotelMap" target="_blank" rel="noreferrer">Mapa do hotel</a>
+        <a class="btn yellow" id="nearbyFood" target="_blank" rel="noreferrer">Comida perto de mim</a>
+        <a class="btn blue" href="#transporte">Passe e deslocamento</a>
+        <a class="btn green" href="#reservas">Checklist de reservas</a>
+      </div>
+      <div class="tabs" id="tabs"></div>
+      <div class="section">
+        <p class="small">Regra de ouro da semana</p>
+        <p>Manhã cedo para rua, miolo do dia com ar-condicionado, fim de tarde para parques, mirantes e Brooklyn.</p>
+      </div>
+    </aside>
+
+    <main>
+      <section class="intro">
+        <p class="eyebrow">Roteiro prático, editável e com mapas</p>
+        <h1>Nova York com clássicos, compras, comidinhas e pausas reais.</h1>
+        <div class="summary">
+          <div class="metric"><b>Base</b><span>LUMA, 120 W 41st St</span></div>
+          <div class="metric"><b>Família</b><span>2 adultos, 15 anos, 8 anos</span></div>
+          <div class="metric"><b>Clima</b><span>Calor forte 01-03/07</span></div>
+          <div class="metric"><b>Transporte</b><span>OMNY, max. US$35/pessoa</span></div>
+        </div>
+        <div class="notice">
+          <strong>O ajuste importante:</strong>
+          <p>A previsão indica 35-37 C entre 01/07 e 03/07. Por isso, Statue fica na primeira balsa, AMNH vira refúgio de calor, SoHo fica em blocos curtos, e Bronx Zoo entra como opcional. O jogo do Brasil em 05/07 depende de o Brasil passar do Japão em 29/06.</p>
+        </div>
+        <div class="reservation-strip">
+          <div class="reservation">
+            <strong>Au Cheval confirmado</strong>
+            <span>02/07 às 16:30 · tratar como early dinner</span>
+          </div>
+          <div class="reservation">
+            <strong>COQODAQ confirmado</strong>
+            <span>04/07 às 17:00 · jantar especial do feriado</span>
+          </div>
+          <div class="reservation">
+            <strong>Brasil, se passar</strong>
+            <span>05/07 às 16:00 · reservar Via Brasil ou Emporium Brasil</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="map-wrap" id="mapa">
+        <p class="eyebrow">Mapa</p>
+        <h2>Mapa interativo por dia</h2>
+        <div class="map-filters" id="mapFilters"></div>
+        <div id="tripMap">
+          <div class="map-fallback">Mapa indisponível. Use os botões "Abrir rota do dia" em cada aba.</div>
+        </div>
+        <p class="small" style="margin-top:10px">Pinos aproximados, bons para orientação. Toque em um ponto para abrir no Google Maps.</p>
+      </section>
+
+      <section id="days"></section>
+
+      <section class="tool-section" id="transporte">
+        <div class="band">
+          <div class="band-head">
+            <div>
+              <p class="eyebrow">Transporte</p>
+              <h2>Melhor deal para vocês 4</h2>
+            </div>
+            <a class="btn blue" target="_blank" rel="noreferrer" href="https://omny.info/fares">Ver regras OMNY</a>
+          </div>
+          <div class="three-col">
+            <div class="side-box">
+              <h3>Metro e onibus</h3>
+              <p>Usem OMNY, sempre o mesmo cartão/celular/relógio por pessoa. A tarifa é US$3 e o teto de 7 dias é US$35 por pessoa. Para 4 pessoas, o máximo prático da semana fica em US$140.</p>
+            </div>
+            <div class="side-box">
+              <h3>Importante</h3>
+              <p>Não passem os 4 no mesmo celular/cartão se quiserem aproveitar o teto: cada pessoa precisa do próprio método de pagamento para acumular o cap.</p>
+            </div>
+            <div class="side-box">
+              <h3>Crianca</h3>
+              <p>Crianças até 44 polegadas entram grátis com adulto pagante. Aos 8 anos, provavelmente sua filha menor já paga, mas vale medir antes.</p>
+            </div>
+          </div>
+          <div class="two-col" style="margin-top:14px">
+            <div class="side-box">
+              <h3>Chegada JFK</h3>
+              <p>Mais econômico: AirTrain até Jamaica + metrô/LIRR. Mais confortável depois de voo com malas: táxi/Uber. AirTrain não entra no teto OMNY; LIRR também não.</p>
+            </div>
+            <div class="side-box">
+              <h3>Roosevelt Island Tram</h3>
+              <p>Entra no mesmo sistema OMNY e conta como uma viagem comum. É um passeio curto, visual e bom para o domingo do jogo.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tool-section" id="reservas">
+        <div class="band">
+          <div class="band-head">
+            <div>
+              <p class="eyebrow">Reservas</p>
+              <h2>Checklist que salva no navegador</h2>
+            </div>
+            <button id="clearChecks">Limpar checks</button>
+          </div>
+          <div class="checklist" id="checklist"></div>
+        </div>
+      </section>
+
+      <section class="tool-section" id="compras">
+        <div class="band">
+          <div class="band-head">
+            <div>
+              <p class="eyebrow">Compras</p>
+              <h2>Lojas por região, com busca direta no Maps</h2>
+            </div>
+          </div>
+          <div class="side-box" style="margin-bottom:12px">
+            <h3>Checar antes de atravessar a cidade</h3>
+            <p>Algumas lojas da lista podem ser online, showroom, appointment-only ou ter mudado de bairro. Antes de sair, confirme no Maps/Instagram especialmente: Emi Jay, Jaded London, Bronx and Banco, 101 Studio, Feste, Clic, Kujten/Kutjen e Hauteline/Houteline. Skims e American Girl entram melhor no eixo Fifth Avenue/Rockefeller.</p>
+          </div>
+          <div class="filter-row" id="storeFilters"></div>
+          <div class="stores-grid" id="stores"></div>
+        </div>
+      </section>
+
+      <section class="tool-section" id="comidas">
+        <div class="band">
+          <div class="band-head">
+            <div>
+              <p class="eyebrow">Comidinhas</p>
+              <h2>Lista rápida para encaixar no caminho</h2>
+            </div>
+          </div>
+          <div class="three-col" id="foodDirectory"></div>
+        </div>
+      </section>
+
+      <p class="footer">Atualizado em 28/06/2026. Horários, clima, reservas e lojas mudam rápido em NY; use os botões de mapa e confirme no dia anterior.</p>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const hotel = "LUMA Hotel Times Square, 120 W 41st St, New York, NY";
+    const mapSearch = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+    const mapDir = (dest, origin = "") => {
+      const base = "https://www.google.com/maps/dir/?api=1&travelmode=transit";
+      return base + (origin ? "&origin=" + encodeURIComponent(origin) : "") + "&destination=" + encodeURIComponent(dest);
+    };
+    const mapRoute = (points, mode = "transit") => {
+      const origin = points[0];
+      const destination = points[points.length - 1];
+      const waypoints = points.slice(1, -1).join("|");
+      return "https://www.google.com/maps/dir/?api=1&travelmode=" + mode +
+        "&origin=" + encodeURIComponent(origin) +
+        "&destination=" + encodeURIComponent(destination) +
+        (waypoints ? "&waypoints=" + encodeURIComponent(waypoints) : "");
+    };
+
+    document.getElementById("hotelMap").href = mapSearch(hotel);
+    document.getElementById("nearbyFood").href = mapSearch("food near my location New York");
+
+    const days = [
+      {
+        id: "d30",
+        tab: "30/06 Chegada",
+        date: "30/06, terça",
+        title: "Chegada + Midtown sem forçar",
+        weather: "32 C / 23 C, abafado; trovoada à tarde",
+        tags: [["leve", ""], ["midtown", "transit"], ["ar-condicionado", "heat"]],
+        route: [hotel, "Culture Espresso 72 W 38th St New York", "Bryant Park New York", "Grand Central Terminal New York", "SUMMIT One Vanderbilt New York", "Rockefeller Center New York", "The Halal Guys 53rd and 6th New York"],
+        plan: [
+          ["Manhã", "Chegada, AirTrain/LIRR ou táxi até o LUMA. Se o quarto não estiver pronto, deixar malas e não inventar maratona."],
+          ["12:00", "Café ou lanche perto do hotel: Culture Espresso, Liberty Bagels ou algo simples em Bryant Park."],
+          ["14:00", "Bryant Park, Biblioteca Pública e Grand Central. Tudo é perto e funciona bem mesmo cansados."],
+          ["16:30", "SUMMIT One Vanderbilt se o céu estiver limpo. Se estiver fechado por chuva, mover para 04/07 ou 05/07."],
+          ["18:30", "Rockefeller / Fifth Avenue leve: American Girl, Saks, St. Patrick's. Jantar casual: Halal Guys ou 7th Street Burger."],
+        ],
+        food: [
+          ["Culture Espresso", "72 W 38th St; bom para café perto do hotel"],
+          ["Liberty Bagels Midtown", "260 W 35th St; clássico prático"],
+          ["The Halal Guys", "53rd & 6th; icônico, fila rápida"],
+          ["7th Street Burger", "usar unidade Midtown/Times Square no Maps"],
+        ],
+        notes: ["Comprar água e lanches de quarto neste dia.", "Times Square vale uma passada curta à noite, sem virar programa longo."]
+      },
+      {
+        id: "d01",
+        tab: "01/07 Statue + DUMBO",
+        date: "01/07, quarta",
+        title: "Estátua da Liberdade cedo + Brooklyn no fim do dia",
+        weather: "35 C / 26 C, calor perigoso",
+        tags: [["clássico", ""], ["começar cedo", "heat"], ["brooklyn", "park"]],
+        route: [hotel, "Battery Park Statue City Cruises New York", "Statue of Liberty National Monument", "Oculus World Trade Center New York", "Bubby's Tribeca New York", "Brooklyn Bridge Park Pier 1", "Time Out Market New York 55 Water St Brooklyn"],
+        plan: [
+          ["07:00", "Café rápido e metrô até Battery Park. Mirar a primeira ou segunda balsa oficial da Statue City Cruises."],
+          ["08:30", "Estátua da Liberdade. Com calor forte, priorizar Liberty Island e decidir Ellis Island na hora, sem culpa se cortarem."],
+          ["12:00", "Volta para Manhattan: Oculus/Westfield para ar-condicionado, banheiro e pausa."],
+          ["13:00", "Almoço em Bubby's Tribeca ou lanche rápido antes de voltar ao hotel para descanso."],
+          ["17:30", "DUMBO/Brooklyn Bridge Park quando o sol baixar. Time Out Market resolve comida variada para todos."],
+          ["20:00", "Voltar de metrô/ferry. Fotos em Washington Street só se a fila estiver civilizada."],
+        ],
+        food: [
+          ["Bubby's", "120 Hudson St; brunch/lunch clássico"],
+          ["Time Out Market Brooklyn", "55 Water St; várias opções no mesmo lugar"],
+          ["L'Industrie Williamsburg", "254 S 2nd St; só se quiserem esticar Brooklyn"],
+          ["Lucali", "575 Henry St; ótima pizza, mas fila/espera pesada com crianças"],
+        ],
+        notes: ["Comprar ingresso oficial da estátua; evitar vendedores em Battery Park.", "Levar chapéu, protetor e garrafas. O calor muda o ritmo do dia."]
+      },
+      {
+        id: "d02",
+        tab: "02/07 SoHo",
+        date: "02/07, quinta",
+        title: "SoHo, Nolita e Au Cheval às 16:30",
+        weather: "37 C / 27 C, muito quente",
+        tags: [["compras", ""], ["Au Cheval 16:30", "food"], ["calor", "heat"]],
+        route: [hotel, "Apollo Bagels 242 E 10th St New York", "Uniqlo Soho 546 Broadway New York", "Glossier Soho New York", "All'Antico Vinaio 225 Sullivan St New York", "Au Cheval 33 Cortlandt Alley New York", hotel],
+        plan: [
+          ["09:30", "Começar com Apollo Bagels ou PopUp Bagels no caminho. Entrar no SoHo antes do pico de calor."],
+          ["10:30", "Eixo Broadway/Lafayette: Uniqlo, Mango, Aritzia, Sephora, On, Edikted/Skims se fizer sentido pelo Maps."],
+          ["12:30", "Pausa leve de comida: dividir All'Antico Vinaio ou Los Tacos No.1, sem transformar em almoço pesado por causa do Au Cheval."],
+          ["14:00", "Eixo Mercer/Greene/Spring/Prince: Glossier, Alo, Reformation, GANNI, Balenciaga, Acne, Polene, Frankie Shop, Danielle Guizio."],
+          ["15:30", "Sair de SoHo/Nolita rumo a Au Cheval. Dá para ir caminhando se o calor permitir, ou metrô/táxi curto se todo mundo estiver derretendo."],
+          ["16:30", "Au Cheval: tratar como early dinner. Melhor pedir o burger, batatas/ovo/bacon conforme fome, e não marcar outro restaurante depois."],
+          ["18:30", "Noite livre: voltar ao hotel, Times Square curta, ou Nolita/LES só se a energia estiver alta. Russ & Daughters fica para outro encaixe."],
+        ],
+        food: [
+          ["Apollo Bagels", "242 E 10th St; café/lanche"],
+          ["All'Antico Vinaio", "225 Sullivan St; sanduíche grande para dividir"],
+          ["Los Tacos No.1", "NoHo/Times Square/Chelsea; usar unidade mais perto"],
+          ["Au Cheval", "33 Cortlandt Alley; reserva 02/07 às 16:30"],
+        ],
+        notes: ["Esta é a trilha principal da filha de 15 anos.", "Para a filha de 8, alternar lojas com pausas curtas e sorvete/bebida.", "Depois do Au Cheval, não tentar jantar de novo; se bater fome tarde, fazer lanche casual perto do hotel."]
+      },
+      {
+        id: "d03",
+        tab: "03/07 AMNH",
+        date: "03/07, sexta",
+        title: "Museu de História Natural + Central Park em horário humano",
+        weather: "37 C / 27 C, quente e úmido",
+        tags: [["museu", ""], ["indoor", "heat"], ["central park", "park"]],
+        route: [hotel, "Levain Bakery 167 W 74th St New York", "American Museum of Natural History New York", "Mama's TOO 2750 Broadway New York", "Central Park Zoo New York", "Belvedere Castle Central Park New York", "L'Industrie Pizzeria West Village New York"],
+        plan: [
+          ["09:00", "Subir para UWS. Café/bolacha na Levain da 74th ou PopUp Bagels na Columbus, perto do museu."],
+          ["10:00", "AMNH com entrada marcada. Priorizar dinossauros, baleia, planetário se comprarem o extra."],
+          ["13:30", "Almoço casual: Mama's Too para pizza ou algo mais simples perto do museu."],
+          ["15:00", "Voltar ao hotel para banho/descanso, porque o calor não vai estar brincando."],
+          ["17:30", "Central Park só no fim da tarde: Strawberry Fields, Bethesda, Belvedere ou Sheep Meadow, escolhendo pouco. Para a filha de 8, Central Park Zoo é o melhor mini-zoo da viagem."],
+          ["19:30", "Pizza casual: L'Industrie West Village, Mama's Too se ficaram no UWS, ou Emily se quiserem sentar."],
+        ],
+        food: [
+          ["Levain Bakery", "167 W 74th St; cookie clássico"],
+          ["PopUp Bagels UWS", "338 Columbus Ave; perto do AMNH"],
+          ["Mama's Too", "2750 Broadway; fatias fortes, um pouco ao norte"],
+          ["Central Park Zoo", "opcional compacto para a filha de 8, melhor que Bronx Zoo nesta semana"],
+          ["Emily West Village", "35 Downing St; sentar e comer burger/pizza"],
+        ],
+        notes: ["AMNH é o melhor refúgio do roteiro para calor extremo.", "Não tentar cruzar o Central Park inteiro nesse dia.", "Se quiserem bicho sem perder o dia inteiro, Central Park Zoo ganha do Bronx Zoo neste roteiro."]
+      },
+      {
+        id: "d04",
+        tab: "04/07 Hudson + COQODAQ",
+        date: "04/07, sábado",
+        title: "Hudson Yards, Flatiron e COQODAQ às 17:00",
+        weather: "32 C / 25 C, chance de chuva e trovoada à tarde",
+        tags: [["feriado", "heat"], ["COQODAQ 17:00", "food"], ["fogos 21:25", "park"]],
+        route: [hotel, "Hudson Yards New York", "Chelsea Market New York", "Fishs Eddy 889 Broadway New York", "COQODAQ 12 E 22nd St New York", "Pier 57 New York"],
+        plan: [
+          ["09:30", "Hudson Yards cedo: Vessel por fora, lojas e ar-condicionado. Edge só se quiserem outro mirante além do SUMMIT."],
+          ["11:00", "High Line em trecho curto até Chelsea Market. Se estiver muito quente, pular caminhada e ir direto de metrô/táxi."],
+          ["12:00", "Chelsea Market: Los Tacos No.1 e lanches. Depois seguir para Flatiron."],
+          ["14:00", "Flatiron: New Balance, NYC Racket Sports, Fishs Eddy. Pausa café se chover. West Village fica opcional, só se a energia estiver alta."],
+          ["16:30", "Ir para COQODAQ sem pressa. Reserva às 17:00 vira o jantar especial do dia e evita horário tarde com as meninas."],
+          ["19:00", "Depois do jantar, decidir na hora: Pier 57/Hudson para clima de fogos se fizer sentido, ou voltar ao hotel e preservar energia."],
+          ["21:25", "Fogos de 4 de julho se vocês quiserem encarar multidão. Conferir mapa oficial no dia; com chuva, assistir de perto do hotel/TV e preservar energia."],
+        ],
+        food: [
+          ["Los Tacos No.1 Chelsea Market", "75 9th Ave; bom encaixe no dia"],
+          ["Gorilla Cheese", "food truck; checar local do dia no Maps/Instagram"],
+          ["COQODAQ", "12 E 22nd St; reserva 04/07 às 17:00"],
+          ["7th Street Burger", "backup casual e rápido"],
+        ],
+        notes: ["Não marque Statue nem zoo no 4 de julho.", "O feriado deixa tudo mais cheio; este dia precisa ter margem.", "Não reservar Union Square Cafe neste dia; guardar para 02/07 ou 03/07 se aparecer horário bom."]
+      },
+      {
+        id: "d05",
+        tab: "05/07 Brasil",
+        date: "05/07, domingo",
+        title: "Fifth Avenue, Rockefeller e jogo do Brasil",
+        weather: "31 C / 24 C, nublado com chuva/trovoada",
+        tags: [["jogo 16:00", "food"], ["fifth ave", "transit"], ["plano condicional", "heat"]],
+        route: [hotel, "American Girl Place New York", "Saks Fifth Avenue New York", "Skims Fifth Avenue New York", "Via Brasil 34 W 46th St New York"],
+        plan: [
+          ["09:30", "Manhã leve perto do hotel: Rockefeller, American Girl, Saks, Skims/Sephora e lojas pendentes da Fifth Avenue."],
+          ["11:30", "Se o tempo estiver bom e todo mundo quiser vista, Roosevelt Island Tram entra como opcional curto. Se estiver chovendo, ficar em Midtown é melhor."],
+          ["13:00", "Almoço leve e descanso no hotel. Não vale chegar cansado ao jogo."],
+          ["16:00", "Se o Brasil passar do Japão em 29/06: jogo das oitavas em New Jersey. Assistir em Via Brasil, Emporium Brasil, Berimbau, Hudson Yards ou Legends, com reserva. Via Brasil fica a poucos minutos do LUMA."],
+          ["19:00", "Depois do jogo, jantar casual em Midtown ou reserva tardia se ainda houver energia."],
+          ["Plano B", "Se o Brasil não jogar: usar este dia para Roosevelt Island, compras pendentes, Central Park Zoo ou uma sessão extra de Central Park."],
+        ],
+        food: [
+          ["Via Brasil", "34 W 46th St; Little Brazil, tentar reservar para 15:00/15:30"],
+          ["Emporium Brasil", "46 W 46th St; torcida brasileira perto do hotel"],
+          ["Glace", "1266 Madison Ave; só se fizerem Roosevelt/UES"],
+          ["Legends / Football Factory", "6 W 33rd St; soccer bar clássico, vibe mais adulta"],
+        ],
+        notes: ["Confirmar o adversário depois de Brasil x Japão em 29/06.", "Reservar mesa assim que o jogo estiver confirmado; soccer bars lotam muito.", "Domingo do jogo deve ser curto e perto do hotel; a energia emocional do jogo já conta como programa."]
+      },
+      {
+        id: "d06",
+        tab: "06/07 Volta",
+        date: "06/07, segunda",
+        title: "Saída de manhã",
+        weather: "29 C / 24 C, pancadas e trovoadas",
+        tags: [["aeroporto", "transit"], ["sem risco", "heat"]],
+        route: [hotel, "JFK Airport New York"],
+        plan: [
+          ["Manhã", "Sair com folga. Se estiver chovendo, táxi/Uber provavelmente ganha de carregar mala no metrô."],
+          ["Antes", "Conferir se algo ficou no cofre/quarto, carregar celulares e separar documentos."],
+          ["OMNY", "Se vocês começaram a usar OMNY em 30/06, o teto de 7 dias ainda cobre deslocamentos urbanos da manhã, mas não AirTrain/LIRR."],
+        ],
+        food: [
+          ["Culture Espresso", "se der tempo antes do aeroporto"],
+          ["Liberty Bagels", "comprar para levar"],
+        ],
+        notes: ["Não planejar compras nesse dia.", "Deixar margem para chuva e trânsito."]
+      }
+    ];
+
+    const checklist = [
+      "Comprar Statue City Cruises oficial para 01/07, primeira ou segunda balsa saindo de Battery Park.",
+      "Marcar AMNH para 03/07 às 10:00; considerar planetário se as meninas curtirem.",
+      "Comprar SUMMIT One Vanderbilt apenas em janela com céu bom ou ingresso flexível.",
+      "Au Cheval: manter 02/07 às 16:30 e tratar como early dinner depois das compras de SoHo.",
+      "COQODAQ: manter 04/07 às 17:00. É cedo, mas encaixa muito bem no feriado e evita jantar tarde.",
+      "Tentar reservas restantes: Union Square Cafe e Polo Bar. Escolher 2 ou 3 jantares sentados no máximo.",
+      "Depois de Brasil x Japão em 29/06, reservar local para assistir ao jogo de 05/07, se o Brasil passar.",
+      "Na véspera de 04/07, conferir mapa oficial dos fogos e decidir se vale encarar multidão.",
+      "Separar um método OMNY por pessoa: 4 cartões/celulares/relógios, ou OMNY cards.",
+      "Salvar este HTML no celular e abrir cada rota no Google Maps no dia."
+    ];
+
+    const stores = {
+      "SoHo": ["Mad Happy SoHo", "Jaded London stockist New York", "Danielle Guizio New York", "Annie's Ibiza New York", "Edikted SoHo", "Frankies Bikinis SoHo", "MyPlasticHeart NYC", "The Frankie Shop SoHo", "Mure and Grand SoHo", "Reformation SoHo", "SKIMS New York SoHo", "Wilson SoHo New York", "On SoHo New York", "Uniqlo SoHo", "Emi Jay New York", "Glossier SoHo", "Aritzia SoHo", "Alo Yoga SoHo", "GANNI SoHo", "Balenciaga Mercer Street", "Acne Studios Greene Street New York", "Mango SoHo Broadway", "Sephora SoHo Broadway", "Ko'llection New York", "H Studio New York", "An-me New York", "With Jean New York", "Polene New York"],
+      "Nolita": ["Kutjen New York", "101 Studio New York Nolita", "Houteline New York"],
+      "West Village": ["La Ligne West Village", "Big Night West Village", "Clic West Village", "Coming Soon New York", "BedHead PJs New York", "Bronx and Banco New York", "Feste New York", "Loeffler Randall West Village"],
+      "Flatiron": ["New Balance Flatiron New York", "NYC Racket Sports Flatiron", "Fishs Eddy 889 Broadway"],
+      "Midtown / Fifth": ["Saks Fifth Avenue", "American Girl Rockefeller Center", "Edikted Midtown New York", "Hollister Fifth Avenue New York", "Maje Fifth Avenue New York", "New Balance Flagship New York", "Wilson Columbus Circle", "Sephora 5th Avenue New York"]
+    };
+
+    const foodDirectory = [
+      ["Bagels e café", [
+        ["Apollo Bagels", "242 E 10th St"],
+        ["PopUp Bagels", "177 Thompson St / 338 Columbus Ave / 1457 Third Ave"],
+        ["Liberty Bagels Midtown", "260 W 35th St"],
+        ["Culture Espresso", "72 W 38th St"]
+      ]],
+      ["Rápido e icônico", [
+        ["Los Tacos No.1", "Times Square, NoHo ou Chelsea Market"],
+        ["7th Street Burger", "várias unidades; escolher no Maps"],
+        ["The Halal Guys", "W 53rd St & 6th Ave"],
+        ["All'Antico Vinaio", "225 Sullivan St"]
+      ]],
+      ["Doces, pizza e clássicos", [
+        ["Levain Bakery", "167 W 74th St"],
+        ["Glace", "1266 Madison Ave"],
+        ["L'Industrie", "West Village ou Williamsburg"],
+        ["Mama's Too", "2750 Broadway"],
+        ["Russ & Daughters", "179 E Houston St"],
+        ["Lucali", "575 Henry St, Brooklyn"]
+      ]]
+    ];
+
+    const mapDays = [
+      ["all", "Todos", "#17202a"],
+      ["d30", "30/06", "#647184"],
+      ["d01", "01/07", "#2f7d5a"],
+      ["d02", "02/07", "#b9503d"],
+      ["d03", "03/07", "#2e78b7"],
+      ["d04", "04/07", "#f2c94c"],
+      ["d05", "05/07", "#7c4d9f"],
+      ["extra", "Extras", "#6b7280"]
+    ];
+
+    const mapPoints = [
+      { day: "d30", name: "LUMA Hotel", type: "base", lat: 40.7547, lng: -73.9857, note: "Base da viagem, Bryant Park" },
+      { day: "d30", name: "Culture Espresso", type: "comida", lat: 40.75252, lng: -73.98439, note: "Café perto do hotel" },
+      { day: "d30", name: "Bryant Park", type: "passeio", lat: 40.7536, lng: -73.9832, note: "Primeira caminhada leve" },
+      { day: "d30", name: "SUMMIT One Vanderbilt", type: "passeio", lat: 40.7527, lng: -73.9786, note: "Mirante se o céu abrir" },
+
+      { day: "d01", name: "Battery Park / ferry da Statue", type: "passeio", lat: 40.7036, lng: -74.0170, note: "Chegar cedo para a balsa oficial" },
+      { day: "d01", name: "Statue of Liberty", type: "passeio", lat: 40.6892, lng: -74.0445, note: "Prioridade clássica da viagem" },
+      { day: "d01", name: "Bubby's Tribeca", type: "comida", lat: 40.71983, lng: -74.00842, note: "Brunch/lunch pós-Statue" },
+      { day: "d01", name: "Brooklyn Bridge Park", type: "passeio", lat: 40.7003, lng: -73.9967, note: "Fim de tarde em DUMBO" },
+      { day: "d01", name: "Time Out Market", type: "comida", lat: 40.70313, lng: -73.98860, note: "Jantar casual em Brooklyn" },
+
+      { day: "d02", name: "SoHo compras", type: "compras", lat: 40.7240, lng: -73.9981, note: "Eixo Broadway, Prince, Mercer, Greene" },
+      { day: "d02", name: "All'Antico Vinaio", type: "comida", lat: 40.7281, lng: -74.0003, note: "Dividir algo leve antes do Au Cheval" },
+      { day: "d02", name: "Au Cheval 16:30", type: "reserva", lat: 40.71803, lng: -74.00201, note: "Reserva confirmada, early dinner" },
+
+      { day: "d03", name: "AMNH", type: "passeio", lat: 40.7813, lng: -73.9740, note: "Museu de História Natural" },
+      { day: "d03", name: "Levain Bakery", type: "comida", lat: 40.77847, lng: -73.97950, note: "Cookie clássico" },
+      { day: "d03", name: "Central Park Zoo", type: "extra", lat: 40.7678, lng: -73.9718, note: "Mini-zoo opcional para a filha de 8" },
+      { day: "d03", name: "Bethesda Terrace", type: "passeio", lat: 40.7740, lng: -73.9710, note: "Central Park no fim da tarde" },
+
+      { day: "d04", name: "Hudson Yards", type: "passeio", lat: 40.7538, lng: -74.0019, note: "Lojas, Vessel e ar-condicionado" },
+      { day: "d04", name: "Chelsea Market", type: "comida", lat: 40.7424, lng: -74.0061, note: "Almoço casual" },
+      { day: "d04", name: "Fishs Eddy / Flatiron", type: "compras", lat: 40.7389, lng: -73.9896, note: "Flatiron antes do COQODAQ" },
+      { day: "d04", name: "COQODAQ 17:00", type: "reserva", lat: 40.74008, lng: -73.98875, note: "Reserva confirmada" },
+      { day: "d04", name: "Pier 57", type: "extra", lat: 40.7429, lng: -74.0101, note: "Possível pós-jantar antes dos fogos" },
+
+      { day: "d05", name: "American Girl / Rockefeller", type: "compras", lat: 40.7598, lng: -73.9779, note: "Bom para a filha de 8" },
+      { day: "d05", name: "Saks Fifth Avenue", type: "compras", lat: 40.7580, lng: -73.9776, note: "Fifth Avenue" },
+      { day: "d05", name: "Via Brasil", type: "jogo", lat: 40.7568, lng: -73.9805, note: "Primeira opção perto do hotel para o jogo" },
+      { day: "extra", name: "Roosevelt Island Tram", type: "extra", lat: 40.7614, lng: -73.9637, note: "Passeio curto se sobrar energia" },
+      { day: "extra", name: "Bronx Zoo", type: "extra", lat: 40.8506, lng: -73.8769, note: "Dia inteiro, longe; só se virarem a chave do roteiro" },
+      { day: "extra", name: "Lucali", type: "extra", lat: 40.68182, lng: -74.00036, note: "Pizza excelente, logística difícil com fila" }
+    ];
+
+    function renderDays() {
+      const tabs = document.getElementById("tabs");
+      const daysRoot = document.getElementById("days");
+      tabs.innerHTML = "";
+      daysRoot.innerHTML = "";
+
+      days.forEach((day, i) => {
+        const tab = document.createElement("button");
+        tab.className = "tab" + (i === 0 ? " active" : "");
+        tab.type = "button";
+        tab.textContent = day.tab;
+        tab.addEventListener("click", () => activateDay(day.id));
+        tabs.appendChild(tab);
+
+        const panel = document.createElement("article");
+        panel.className = "day-panel" + (i === 0 ? " active" : "");
+        panel.id = day.id;
+        panel.innerHTML = `
+          <div class="day-head">
+            <div>
+              <div class="day-kicker">${day.date} · ${day.weather}</div>
+              <h2>${day.title}</h2>
+              <div class="tags">${day.tags.map(([label, type]) => `<span class="tag ${type}">${label}</span>`).join("")}</div>
+            </div>
+            <div class="link-grid">
+              <a class="btn primary" target="_blank" rel="noreferrer" href="${mapRoute(day.route)}">Abrir rota do dia</a>
+              <a class="btn" target="_blank" rel="noreferrer" href="${mapDir(day.route[day.route.length - 1])}">Ir daqui ao último ponto</a>
+            </div>
+          </div>
+          <div class="day-body">
+            <div class="timeline">
+              ${day.plan.map(([time, text]) => `<div class="slot"><div class="time">${time}</div><p>${text}</p></div>`).join("")}
+            </div>
+            <div class="side">
+              <div class="side-box">
+                <h3>Comidas perto</h3>
+                <ul class="food-list">
+                  ${day.food.map(([name, desc]) => `<li><a target="_blank" rel="noreferrer" href="${mapSearch(name + " New York")}">${name}</a><span class="subtext">${desc}</span></li>`).join("")}
+                </ul>
+              </div>
+              <div class="side-box">
+                <h3>Notas</h3>
+                <ul class="notes-list">${day.notes.map(note => `<li>${note}</li>`).join("")}</ul>
+              </div>
+            </div>
+          </div>
+        `;
+        daysRoot.appendChild(panel);
+      });
+    }
+
+    function activateDay(id) {
+      document.querySelectorAll(".day-panel").forEach(panel => panel.classList.toggle("active", panel.id === id));
+      [...document.querySelectorAll(".tab")].forEach((tab, i) => tab.classList.toggle("active", days[i].id === id));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderChecklist() {
+      const root = document.getElementById("checklist");
+      const saved = JSON.parse(localStorage.getItem("nycChecklist") || "{}");
+      root.innerHTML = "";
+      checklist.forEach((item, i) => {
+        const label = document.createElement("label");
+        label.className = "check" + (saved[i] ? " done" : "");
+        label.innerHTML = `<input type="checkbox" ${saved[i] ? "checked" : ""}><span>${item}</span>`;
+        label.querySelector("input").addEventListener("change", (event) => {
+          saved[i] = event.target.checked;
+          localStorage.setItem("nycChecklist", JSON.stringify(saved));
+          label.classList.toggle("done", event.target.checked);
+        });
+        root.appendChild(label);
+      });
+      document.getElementById("clearChecks").addEventListener("click", () => {
+        localStorage.removeItem("nycChecklist");
+        renderChecklist();
+      }, { once: true });
+    }
+
+    function renderStores(active = "Todos") {
+      const filters = document.getElementById("storeFilters");
+      const root = document.getElementById("stores");
+      const groups = ["Todos", ...Object.keys(stores)];
+      filters.innerHTML = groups.map(group => `<button class="filter ${group === active ? "active" : ""}" type="button">${group}</button>`).join("");
+      filters.querySelectorAll("button").forEach(button => button.addEventListener("click", () => renderStores(button.textContent)));
+
+      const visibleGroups = active === "Todos" ? Object.keys(stores) : [active];
+      root.innerHTML = visibleGroups.map(group => `
+        <div class="store-card">
+          <h3>${group}</h3>
+          <ul class="store-list">
+            ${stores[group].map(name => `<li><a target="_blank" rel="noreferrer" href="${mapSearch(name)}">${name}</a><span class="subtext">Buscar no Maps antes de ir; lojas/stockists mudam rápido.</span></li>`).join("")}
+          </ul>
+        </div>
+      `).join("");
+    }
+
+    function renderFoodDirectory() {
+      const root = document.getElementById("foodDirectory");
+      root.innerHTML = foodDirectory.map(([group, items]) => `
+        <div class="side-box">
+          <h3>${group}</h3>
+          <ul class="food-list">
+            ${items.map(([name, desc]) => `<li><a target="_blank" rel="noreferrer" href="${mapSearch(name + " New York")}">${name}</a><span class="subtext">${desc}</span></li>`).join("")}
+          </ul>
+        </div>
+      `).join("");
+    }
+
+    function renderTripMap() {
+      const mapRoot = document.getElementById("tripMap");
+      const filters = document.getElementById("mapFilters");
+      if (!mapRoot || !filters) return;
+      filters.innerHTML = "";
+      mapDays.forEach(([id, label]) => {
+        const button = document.createElement("button");
+        button.className = "map-filter" + (id === "all" ? " active" : "");
+        button.type = "button";
+        button.textContent = label;
+        button.dataset.day = id;
+        filters.appendChild(button);
+      });
+
+      if (!window.L) {
+        mapRoot.querySelector(".map-fallback").style.display = "block";
+        return;
+      }
+
+      const map = L.map("tripMap", { scrollWheelZoom: false }).setView([40.742, -73.988], 12);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        attribution: "&copy; OpenStreetMap &copy; CARTO",
+        maxZoom: 19
+      }).addTo(map);
+
+      const colors = Object.fromEntries(mapDays.map(([id, , color]) => [id, color]));
+      const markers = mapPoints.map((point) => {
+        const marker = L.circleMarker([point.lat, point.lng], {
+          radius: point.type === "reserva" ? 9 : 7,
+          color: "#17202a",
+          weight: 2,
+          fillColor: colors[point.day] || "#647184",
+          fillOpacity: .92
+        }).addTo(map);
+        marker.tripDay = point.day;
+        marker.bindPopup(`
+          <strong>${point.name}</strong><br>
+          ${point.note}<br>
+          <a href="${mapSearch(point.lat + "," + point.lng)}" target="_blank" rel="noreferrer">Abrir no Google Maps</a>
+        `);
+        return marker;
+      });
+
+      const applyFilter = (selectedDay) => {
+        filters.querySelectorAll(".map-filter").forEach((button) => {
+          button.classList.toggle("active", button.dataset.day === selectedDay);
+        });
+        markers.forEach((marker) => {
+          const visible = selectedDay === "all" || marker.tripDay === selectedDay;
+          if (visible && !map.hasLayer(marker)) marker.addTo(map);
+          if (!visible && map.hasLayer(marker)) marker.remove();
+        });
+        const visiblePoints = mapPoints.filter((point) => selectedDay === "all" || point.day === selectedDay);
+        if (visiblePoints.length) {
+          const bounds = L.latLngBounds(visiblePoints.map((point) => [point.lat, point.lng]));
+          map.fitBounds(bounds.pad(.2), { maxZoom: 13 });
+        }
+      };
+
+      filters.querySelectorAll(".map-filter").forEach((button) => {
+        button.addEventListener("click", () => applyFilter(button.dataset.day));
+      });
+
+      setTimeout(() => map.invalidateSize(), 100);
+    }
+
+    renderDays();
+    renderChecklist();
+    renderStores();
+    renderFoodDirectory();
+    renderTripMap();
+  </script>
+</body>
+</html>
